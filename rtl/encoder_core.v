@@ -1,0 +1,63 @@
+module encoder_core (
+    input  wire        clk,
+    input  wire        reset,   
+    input  wire        enable,
+    input  wire        enc_a,
+    input  wire        enc_b,
+
+    output reg  signed [31:0] position,
+    output reg               direction
+);
+
+// Internal signals
+reg signed [1:0] step;
+reg [1:0] ab_prev;
+reg [1:0] ab_curr;
+
+// Combinatorial Logic to determine step
+always @(*) begin
+    step = 0;
+    case ({ab_prev, ab_curr})
+        4'b0001: step = 1;
+        4'b0111: step = 1;
+        4'b1110: step = 1;
+        4'b1000: step = 1;
+        4'b0010: step = -1;
+        4'b1011: step = -1;
+        4'b1101: step = -1;
+        4'b0100: step = -1;
+        default: step = 0;
+    endcase
+end
+
+// Clocked logic to update encoder state
+always @(posedge clk) begin
+    if (reset) begin
+        ab_prev <= 2'b00;
+        ab_curr <= 2'b00;
+    end else begin
+        ab_prev <= ab_curr;
+        ab_curr <= {enc_a, enc_b};
+    end
+end
+
+
+// Clocked logic to update registers
+always @(posedge clk) begin
+    if (reset) begin
+        position  <= 0;
+        direction <= 0;
+    end else if (enable) begin
+        position  <= position + step;
+        if (step == 1)
+            direction <= 1'b1;
+        else if (step == -1)
+            direction <= 1'b0;
+
+    end
+end
+
+
+
+
+endmodule
