@@ -9,15 +9,19 @@ module tb_encoder_core;
     reg enc_b;
 
     wire signed [31:0] position;
+    wire signed [31:0] velocity;
     wire direction;
 
-    encoder_core dut (
+    encoder_core #(
+        .WINDOW_CYCLES(10) // testing
+    ) dut (
         .clk(clk),
         .reset(reset),
         .enable(enable),
         .enc_a(enc_a),
         .enc_b(enc_b),
         .position(position),
+        .velocity(velocity),
         .direction(direction)
     );
 
@@ -40,13 +44,23 @@ module tb_encoder_core;
         reset  = 0;
         enable = 1;
 
-        // Forward sequence: 00 → 01 → 11 → 10 → 00
-        #10 {enc_a, enc_b} = 2'b01;
-        #10 {enc_a, enc_b} = 2'b11;
-        #10 {enc_a, enc_b} = 2'b10;
-        #10 {enc_a, enc_b} = 2'b00;
+        //forward movement 
+        repeat(500) begin  
+            #10 {enc_a, enc_b} = 2'b01;
+            #10 {enc_a, enc_b} = 2'b11;
+            #10 {enc_a, enc_b} = 2'b10;
+            #10 {enc_a, enc_b} = 2'b00;
+        end
 
-        // Stop simulation
+        // backward movement (reverse quadrature sequence)
+        repeat(250) begin 
+            #10 {enc_a, enc_b} = 2'b10;
+            #10 {enc_a, enc_b} = 2'b11;
+            #10 {enc_a, enc_b} = 2'b01;
+            #10 {enc_a, enc_b} = 2'b00;
+        end
+
+        // Stop sim
         #20;
         $finish;
     end

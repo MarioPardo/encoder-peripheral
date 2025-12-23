@@ -1,4 +1,6 @@
-module encoder_core (
+module encoder_core #(
+    parameter integer WINDOW_CYCLES = 100_000_000) //represents 1second at 100MHz clock
+  (
     input  wire        clk,
     input  wire        reset,   
     input  wire        enable,
@@ -6,6 +8,7 @@ module encoder_core (
     input  wire        enc_b,
 
     output reg  signed [31:0] position,
+    output reg signed [31:0] velocity,
     output reg               direction
 );
 
@@ -13,6 +16,12 @@ module encoder_core (
 reg signed [1:0] step;
 reg [1:0] ab_prev;
 reg [1:0] ab_curr;
+
+reg [31:0] window_ctr;
+reg signed [31:0] position_prev_window;
+
+
+
 
 // Combinatorial Logic to determine step
 always @(*) begin
@@ -30,14 +39,33 @@ always @(*) begin
     endcase
 end
 
-// Clocked logic to update encoder state
+// Clocked logic: sample encoder state and velocity window
 always @(posedge clk) begin
     if (reset) begin
         ab_prev <= 2'b00;
         ab_curr <= 2'b00;
-    end else begin
+
+        window_ctr           <= 0;
+        position_prev_window <= 0;
+        velocity             <= 0;
+    end 
+    
+    else begin   
         ab_prev <= ab_curr;
         ab_curr <= {enc_a, enc_b};
+
+        // velocity
+        if (enable) begin
+            if (window_ctr == WINDOW_CYCLES-1) begin
+                velocity <= position - position_prev_window;
+                position_prev_window <= position;
+                window_ctr <= 0;
+            end 
+            else begin
+                window_ctr <= window_ctr + 1;
+            end
+        end
+        // do not update velocity if not enabled
     end
 end
 
@@ -47,7 +75,8 @@ always @(posedge clk) begin
     if (reset) begin
         position  <= 0;
         direction <= 0;
-    end else if (enable) begin
+    end 
+    else if (enable) begin
         position  <= position + step;
         if (step == 1)
             direction <= 1'b1;
@@ -56,6 +85,7 @@ always @(posedge clk) begin
 
     end
 end
+
 
 
 
