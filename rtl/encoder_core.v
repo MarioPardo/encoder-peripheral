@@ -3,6 +3,7 @@ module encoder_core #(
   (
     input  wire        clk,
     input  wire        reset,   
+    input  wire        clr_pos,
     input  wire        enable,
     input  wire        enc_a,
     input  wire        enc_b,
@@ -76,6 +77,12 @@ always @(posedge clk) begin
         position  <= 0;
         direction <= 0;
     end 
+    else if (clr_pos) begin
+        position  <= 0;
+        direction <= 0;
+        velocity  <= 0;
+        window_ctr <=0;
+    end
     else if (enable) begin
         position  <= position + step;
         if (step == 1)
