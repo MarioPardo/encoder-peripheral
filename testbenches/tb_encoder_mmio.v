@@ -100,6 +100,9 @@ module tb_encoder_mmio;
         {enc_a, enc_b} = 2'b00;
         #1;@(posedge clk);
         end
+        // Wait for synchronizer pipeline to flush
+        @(posedge clk);
+        @(posedge clk);
 
         // Test 5: Read POSITION register (should be positive)
         bus_re = 1'b1;
@@ -128,6 +131,9 @@ module tb_encoder_mmio;
         {enc_a, enc_b} = 2'b00;
         #1;@(posedge clk);
         end
+        // Wait for synchronizer pipeline to flush
+        @(posedge clk);
+        @(posedge clk);
 
         // Test 8: Read POSITION register (should be 12 decimal)
         bus_re = 1'b1;
@@ -177,6 +183,9 @@ module tb_encoder_mmio;
         {enc_a, enc_b} = 2'b00;
         #1;@(posedge clk);
         end
+        // Wait for synchronizer pipeline to flush
+        @(posedge clk);
+        @(posedge clk);
 
         // Test 14: Read POSITION register (should still be 0)
         bus_re = 1'b1;

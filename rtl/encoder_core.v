@@ -18,6 +18,10 @@ reg signed [1:0] step;
 reg [1:0] ab_prev;
 reg [1:0] ab_curr;
 
+//2 flipflop synchronizers for encoder input stability
+reg [1:0] ab_sync1;
+reg [1:0] ab_sync2;
+
 reg [31:0] window_ctr;
 reg signed [31:0] position_prev_window;
 
@@ -43,6 +47,8 @@ end
 // Clocked logic: sample encoder state and velocity window
 always @(posedge clk) begin
     if (reset) begin
+        ab_sync1 <= 2'b00;
+        ab_sync2 <= 2'b00;
         ab_prev <= 2'b00;
         ab_curr <= 2'b00;
 
@@ -52,8 +58,12 @@ always @(posedge clk) begin
     end 
     
     else begin   
+        // sample encoder inputs (2-flipflop synchronizer)
+        ab_sync1 <= {enc_a, enc_b};
+        ab_sync2 <= ab_sync1;
+
         ab_prev <= ab_curr;
-        ab_curr <= {enc_a, enc_b};
+        ab_curr <= ab_sync2;
 
         // velocity
         if (enable) begin

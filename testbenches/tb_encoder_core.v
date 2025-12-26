@@ -4,6 +4,7 @@ module tb_encoder_core;
 
     reg clk;
     reg reset;
+    reg clr_pos;
     reg enable;
     reg enc_a;
     reg enc_b;
@@ -17,6 +18,7 @@ module tb_encoder_core;
     ) dut (
         .clk(clk),
         .reset(reset),
+        .clr_pos(clr_pos),
         .enable(enable),
         .enc_a(enc_a),
         .enc_b(enc_b),
@@ -35,6 +37,7 @@ module tb_encoder_core;
         // Initialize
         clk     = 0;
         reset   = 1;
+        clr_pos = 0;
         enable  = 0;
         enc_a   = 0;
         enc_b   = 0;
@@ -59,6 +62,10 @@ module tb_encoder_core;
             #10 {enc_a, enc_b} = 2'b01;
             #10 {enc_a, enc_b} = 2'b00;
         end
+
+        // Wait for synchronizer pipeline to flush
+        @(posedge clk);
+        @(posedge clk);
 
         // Stop sim
         #20;

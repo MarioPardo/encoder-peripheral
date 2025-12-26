@@ -41,11 +41,13 @@ Required abstract signals:
 - `bus_we`     – write enable
 - `bus_re`     – read enable
 
+
 Bus timing and protocol details are implementation-specific and abstracted
 for now
+
 ---
 
-## 3. Clock and Reset Assumptions
+## 3. Clock/Timing and Reset Assumptions
 
 - All stateful elements update on the rising edge of `clk`.
 - Reset is synchronous and sampled on the rising edge.
