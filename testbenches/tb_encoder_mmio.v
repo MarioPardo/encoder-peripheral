@@ -2,7 +2,6 @@
 
 module tb_encoder_mmio;
 
-
     reg clk;
     reg reset;
 
