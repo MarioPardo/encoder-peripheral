@@ -49,11 +49,20 @@ module encoder_axi(
     localparam [1:0] RESP_DECERR = 2'b11;  // Decode error (not typically used)
 
     // Internal signals to connect to encoder_mmio
-    reg [31:0] bus_addr;
+    wire [31:0] bus_addr;  // Driven by mux
     reg        bus_we;
     reg        bus_re;
     reg [31:0] bus_wdata;
     wire [31:0] bus_rdata;
+    
+    // Internal address signals from FSMs
+    reg [31:0] w_bus_addr;  // Write FSM's address
+    reg [31:0] r_bus_addr;  // Read FSM's address
+    
+    // Combinational mux for bus_addr based on active operation
+    assign bus_addr = bus_we ? w_bus_addr : 
+                      bus_re ? r_bus_addr : 
+                      32'h0;
 
    
     // Instantiate encoder_mmio
@@ -131,8 +140,9 @@ module encoder_axi(
             B_VALID <= 1'b0;
             B_RESP <= RESP_OKAY;
             bus_we <= 1'b0;
-            w_addr_latched <= 32'h0; //latched to keep em for our use
+            w_addr_latched <= 32'h0;
             w_data_latched <= 32'h0;
+            w_bus_addr <= 32'h0;
         end 
         else begin
             // Default values
@@ -155,7 +165,7 @@ module encoder_axi(
                 
                 w_s_write: begin
                     // Drive bus signals for one cycle
-                    bus_addr <= w_addr_latched;
+                    w_bus_addr <= w_addr_latched;
                     bus_wdata <= w_data_latched;
                     bus_we <= 1'b1;
                     
@@ -187,6 +197,7 @@ module encoder_axi(
     reg [1:0] read_state;
     reg [1:0] read_state_next;
     reg [31:0] r_addr_latched;  // Captured read address
+    reg [31:0] r_data_latched;  // Captured read data
 
     // State register (sequential logic)
     always @(posedge aclk) begin
@@ -229,6 +240,8 @@ module encoder_axi(
             R_RESP <= RESP_OKAY;
             bus_re <= 1'b0;
             r_addr_latched <= 32'h0;
+            r_data_latched <= 32'h0;
+            r_bus_addr <= 32'h0;
         end 
         else begin
             // Default values
@@ -248,8 +261,11 @@ module encoder_axi(
 
                 r_s_read: begin
                     // Drive bus signals for one cycle
-                    bus_addr <= r_addr_latched;
+                    r_bus_addr <= r_addr_latched;
                     bus_re <= 1'b1;
+                    
+                    // Capture read data from bus
+                    r_data_latched <= bus_rdata;
 
                     // All registers are readable
                     if ( (r_addr_latched[7:0] == 8'h00) ||
@@ -262,8 +278,8 @@ module encoder_axi(
                 end
 
                 r_s_resp: begin
-                    // get read data and assert valid
-                    R_DATA <= bus_rdata;
+                    // Output latched read data and assert valid
+                    R_DATA <= r_data_latched;
                     R_VALID <= 1'b1;  // Hold valid until master ready
                 end
             endcase

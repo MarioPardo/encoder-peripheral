@@ -99,29 +99,38 @@ module tb_encoder_axi;
 
     // AXI Task: Read transaction
     task axi_read;
-        input [31:0] addr;
-        begin
-            @(posedge aclk);
-            #1;
-            ar_addr = addr;
-            ar_valid = 1'b1;
-            
-            // Wait for address acceptance
-            wait(ar_ready);
-            @(posedge aclk);
-            #1;
-            ar_valid = 1'b0;
-            
-            // Wait for read data
-            wait(r_valid);
-            r_ready = 1'b1;
-             // Small delay to let data settle
-            $display("AXI READ: addr=0x%h, data=0x%h, resp=%s", 
-                     addr, r_data, (r_resp == 2'b00) ? "OKAY" : "SLVERR");
-            @(posedge aclk);
-            r_ready = 1'b0;
-        end
-    endtask
+    input [31:0] addr;
+    reg [31:0] data_captured;
+    reg [1:0]  resp_captured;
+    begin
+        // Drive AR
+        @(posedge aclk);
+        #1;
+        ar_addr  = addr;
+        ar_valid = 1'b1;
+
+        // Wait for AR handshake
+        while (!(ar_valid && ar_ready)) @(posedge aclk);
+        #1;
+        ar_valid = 1'b0;
+
+        // Be ready for R before it comes
+        r_ready = 1'b1;
+
+        // Wait for R handshake and sample on that clock edge
+        while (!(r_valid && r_ready)) @(posedge aclk);
+        data_captured = r_data;
+        resp_captured = r_resp;
+
+        // Drop RREADY next cycle (optional)
+        @(posedge aclk);
+        r_ready = 1'b0;
+
+        $display("AXI READ: addr=0x%h, data=0x%h, resp=%s",
+                 addr, data_captured, (resp_captured == 2'b00) ? "OKAY" : "SLVERR");
+    end
+endtask
+
 
     initial begin
         $dumpfile("sims/encoder_axi_wave.vcd");
