@@ -113,9 +113,8 @@ module encoder_axi(
          
          case (write_state)
              w_s_idle: begin
-
-                    if (aw_valid && w_valid && ~read_busy)
-                        write_state_next = w_s_write;
+                 if (aw_valid && w_valid && ~read_busy)
+                    write_state_next = w_s_write;
              end
          
              w_s_write: begin
@@ -190,8 +189,9 @@ module encoder_axi(
 
         //states
     localparam [1:0] r_s_idle  = 2'b00;
-    localparam [1:0] r_s_read  = 2'b01;
-    localparam [1:0] r_s_resp  = 2'b10;
+    localparam [1:0] r_s_issue_read = 2'b01;
+    localparam [1:0] r_s_wait_data  = 2'b10;
+    localparam [1:0] r_s_resp  = 2'b11;
 
         //signals
     reg [1:0] read_state;
@@ -213,11 +213,15 @@ module encoder_axi(
             case (read_state)
                 r_s_idle: begin
                     if (ar_valid && ~write_busy)
-                        read_state_next = r_s_read;
+                        read_state_next = r_s_issue_read;
                 end
 
-                r_s_read: begin
-                    // Spend one cycle reading from bus
+                r_s_issue_read: begin
+                    read_state_next = r_s_wait_data;
+                end
+
+                r_s_wait_data: begin
+                    // Wait one more cycle for bus_rdata to be valid
                     read_state_next = r_s_resp;
                 end
 
@@ -244,29 +248,22 @@ module encoder_axi(
             r_bus_addr <= 32'h0;
         end 
         else begin
-            // Default values
+            // Defaults
             AR_READY <= 1'b0;
             bus_re <= 1'b0;
-
             case (read_state)
                 r_s_idle: begin
-                    if (ar_valid) begin
-                        // save address
+                    if (ar_valid && ~write_busy) begin
                         r_addr_latched <= ar_addr;
-                        // send acknowledgement to master
                         AR_READY <= 1'b1;
                     end
-                    R_VALID <= 1'b0;  // Clear valid when idle
+                    R_VALID <= 1'b0;
                 end
 
-                r_s_read: begin
-                    // Drive bus signals for one cycle
+                r_s_issue_read: begin
                     r_bus_addr <= r_addr_latched;
                     bus_re <= 1'b1;
-                    
-                    // Capture read data from bus
-                    r_data_latched <= bus_rdata;
-
+                
                     // All registers are readable
                     if ( (r_addr_latched[7:0] == 8'h00) ||
                          (r_addr_latched[7:0] == 8'h04) || 
@@ -277,10 +274,14 @@ module encoder_axi(
                         R_RESP <= RESP_SLVERR;
                 end
 
+                r_s_wait_data: begin
+                    // Don't latch yet, bus_rdata updates at end of this cycle
+                end
+
                 r_s_resp: begin
-                    // Output latched read data and assert valid
-                    R_DATA <= r_data_latched;
-                    R_VALID <= 1'b1;  // Hold valid until master ready
+                    r_data_latched <= bus_rdata;
+                    R_DATA <= bus_rdata;
+                    R_VALID <= 1'b1;
                 end
             endcase
         end
