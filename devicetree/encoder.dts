@@ -1,0 +1,32 @@
+/*
+ * This node describes the memory-mapped encoder peripheral with AXI4-Lite interface.
+ * Compatible with Xilinx Zynq/ZynqMP and similar ARM+FPGA SoCs.
+ */
+
+/dts-v1/;
+/plugin/;
+
+/ {
+    fragment@0 {
+        target-path = "/amba";
+        __overlay__ {
+            encoder@43C00000 { //TODO update adress
+                compatible = "generic-uio", "xlnx,encoder-axi-1.0";
+                reg = <0x43C00000 0x10000>;
+                
+                clocks = <&clkc 15>; //temp for now
+                clock-names = "s_axi_aclk";
+                
+                /* resets = <&rstc 0>; */
+                /* reset-names = "s_axi_aresetn"; */
+                
+                /* Custom properties */
+                xlnx,position-width = <32>;
+                xlnx,velocity-width = <32>;
+                xlnx,window-cycles = <1000000>;
+                
+                status = "okay";
+            };
+        };
+    };
+};

@@ -39,8 +39,8 @@ module tb_encoder_axi;
 
     // Instantiate DUT
     encoder_axi dut (
-        .aclk(aclk),
-        .aresetn(aresetn),
+        .s_axi_aclk(aclk),
+        .s_axi_aresetn(aresetn),
         .aw_addr(aw_addr),
         .aw_valid(aw_valid),
         .AW_READY(aw_ready),

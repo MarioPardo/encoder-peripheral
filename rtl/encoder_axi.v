@@ -6,8 +6,8 @@
 // this convention was taken from "FPGAs for Beginners" by on Youtube
 
 module encoder_axi(
-    input  wire        aclk,
-    input  wire        aresetn,
+    input  wire        s_axi_aclk,
+    input  wire        s_axi_aresetn,
 
     input  wire        enc_a,
     input  wire        enc_b,
