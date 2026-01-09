@@ -6,40 +6,40 @@
 // this convention was taken from "FPGAs for Beginners" by on Youtube
 
 module encoder_axi(
-    input  wire        s_axi_aclk,
-    input  wire        s_axi_aresetn,
+    input  wire        S_AXI_ACLK,
+    input  wire        S_AXI_ARESETN,
 
     input  wire        enc_a,
     input  wire        enc_b,
 
     //Write Address Channel
-    input  wire [31:0] aw_addr, //address master wants to write to
-    input  wire        aw_valid, //"I have a valid write address", from master
-    output reg         AW_READY, //"I can accept write address", from slave
+    input  wire [31:0] S_AXI_AWADDR, //address master wants to write to
+    input  wire        S_AXI_AWVALID, //"I have a valid write address", from master
+    output reg         S_AXI_AWREADY, //"I can accept write address", from slave
 
     //Write Data Channel
-    input  wire [31:0] w_data, //data from master to write
-    input  wire [3:0]  w_strb, //which byte lanes are valid (1=valid, 0=ignore)
-    input  wire        w_valid, //"I have valid write data", from master
-    output reg         W_READY, //"I can accept write data", from slave
+    input  wire [31:0] S_AXI_WDATA, //data from master to write
+    input  wire [3:0]  S_AXI_WSTRB, //which byte lanes are valid (1=valid, 0=ignore)
+    input  wire        S_AXI_WVALID, //"I have valid write data", from master
+    output reg         S_AXI_WREADY, //"I can accept write data", from slave
 
     // Write Response Channel
-    output reg  [1:0]  B_RESP, //write response (00=OKAY, 10=SLVERR)
+    output reg  [1:0]  S_AXI_BRESP, //write response (00=OKAY, 10=SLVERR)
         // 2'b00 = OKAY , 2'b01 = EXOKAY: exclusive access okay 
         // 2'b10 = SLVERR:slave error", 2'b11 = DECERR - decode error
-    output reg         B_VALID, //"I have a write response", from slave
-    input  wire        b_ready, //"I can accept write response", from master
+    output reg         S_AXI_BVALID, //"I have a write response", from slave
+    input  wire        S_AXI_BREADY, //"I can accept write response", from master
 
     // Read Address Channel
-    input  wire [31:0] ar_addr, //address master wants to read from
-    input  wire        ar_valid, //"I have a valid read address", from master
-    output reg         AR_READY, //"I can accept read address", from slave
+    input  wire [31:0] S_AXI_ARADDR, //address master wants to read from
+    input  wire        S_AXI_ARVALID, //"I have a valid read address", from master
+    output reg         S_AXI_ARREADY, //"I can accept read address", from slave
 
     // Read Data Channel
-    output reg  [31:0] R_DATA, //data from slave to master
-    output reg  [1:0]  R_RESP, //read response (00=OKAY, 10=SLVERR)
-    output reg         R_VALID, //"I have valid read data", from slave
-    input  wire        r_ready //"I can accept read data", from master
+    output reg  [31:0] S_AXI_RDATA, //data from slave to master
+    output reg  [1:0]  S_AXI_RRESP, //read response (00=OKAY, 10=SLVERR)
+    output reg         S_AXI_RVALID, //"I have valid read data", from slave
+    input  wire        S_AXI_RREADY //"I can accept read data", from master
 );
 
     // AXI Response Codes
@@ -67,8 +67,8 @@ module encoder_axi(
    
     // Instantiate encoder_mmio
     encoder_mmio mmio_inst (
-        .clk(aclk),
-        .reset(~aresetn),  // AXI uses active-low reset, convert to active-high
+        .clk(S_AXI_ACLK),
+        .reset(~S_AXI_ARESETN),  // AXI uses active-low reset, convert to active-high
         .bus_addr(bus_addr),
         .bus_we(bus_we),
         .bus_re(bus_re),
@@ -100,8 +100,8 @@ module encoder_axi(
 
 
     // State register (sequential logic)
-    always @(posedge aclk) begin
-         if (~aresetn)
+    always @(posedge S_AXI_ACLK) begin
+         if (~S_AXI_ARESETN)
              write_state <= w_s_idle;
          else
              write_state <= write_state_next;
@@ -113,7 +113,7 @@ module encoder_axi(
          
          case (write_state)
              w_s_idle: begin
-                 if (aw_valid && w_valid && ~read_busy)
+                 if (S_AXI_AWVALID && S_AXI_WVALID && ~read_busy)
                     write_state_next = w_s_write;
              end
          
@@ -123,7 +123,7 @@ module encoder_axi(
              end
              
              w_s_response: begin
-                 if (b_ready)  // Master accepted response
+                 if (S_AXI_BREADY)  // Master accepted response
                 write_state_next = w_s_idle;
              end
          
@@ -132,12 +132,12 @@ module encoder_axi(
      end
 
     // Output logic 
-    always @(posedge aclk) begin
-        if (~aresetn) begin
-            AW_READY <= 1'b0;
-            W_READY <= 1'b0;
-            B_VALID <= 1'b0;
-            B_RESP <= RESP_OKAY;
+    always @(posedge S_AXI_ACLK) begin
+        if (~S_AXI_ARESETN) begin
+            S_AXI_AWREADY <= 1'b0;
+            S_AXI_WREADY <= 1'b0;
+            S_AXI_BVALID <= 1'b0;
+            S_AXI_BRESP <= RESP_OKAY;
             bus_we <= 1'b0;
             w_addr_latched <= 32'h0;
             w_data_latched <= 32'h0;
@@ -145,21 +145,21 @@ module encoder_axi(
         end 
         else begin
             // Default values
-            AW_READY <= 1'b0;
-            W_READY <= 1'b0;
+            S_AXI_AWREADY <= 1'b0;
+            S_AXI_WREADY <= 1'b0;
             bus_we <= 1'b0;
             
             case (write_state)
                 w_s_idle: begin
-                    if (aw_valid && w_valid) begin
+                    if (S_AXI_AWVALID && S_AXI_WVALID) begin
                         // save address and data
-                        w_addr_latched <= aw_addr;
-                        w_data_latched <= w_data;
+                        w_addr_latched <= S_AXI_AWADDR;
+                        w_data_latched <= S_AXI_WDATA;
                         // send acknowledgement to master
-                        AW_READY <= 1'b1;
-                        W_READY <= 1'b1;
+                        S_AXI_AWREADY <= 1'b1;
+                        S_AXI_WREADY <= 1'b1;
                     end
-                    B_VALID <= 1'b0;  // to be safe
+                    S_AXI_BVALID <= 1'b0;  // to be safe
                 end
                 
                 w_s_write: begin
@@ -170,14 +170,14 @@ module encoder_axi(
                     
                     // only CTRL register at 0x00 is writable
                     if (w_addr_latched[7:0] == 8'h00)
-                        B_RESP <= RESP_OKAY;
+                        S_AXI_BRESP <= RESP_OKAY;
                     else
-                        B_RESP <= RESP_SLVERR;
+                        S_AXI_BRESP <= RESP_SLVERR;
                 end
                 
                 w_s_response: begin
                     // Assert response valid
-                    B_VALID <= 1'b1;
+                    S_AXI_BVALID <= 1'b1;
                 
                 end
             endcase
@@ -200,8 +200,8 @@ module encoder_axi(
     reg [31:0] r_data_latched;  // Captured read data
 
     // State register (sequential logic)
-    always @(posedge aclk) begin
-            if (~aresetn)
+    always @(posedge S_AXI_ACLK) begin
+            if (~S_AXI_ARESETN)
                 read_state <= r_s_idle;
             else
                 read_state <= read_state_next;
@@ -212,7 +212,7 @@ module encoder_axi(
             read_state_next = read_state;  // Default: stay in current state
             case (read_state)
                 r_s_idle: begin
-                    if (ar_valid && ~write_busy)
+                    if (S_AXI_ARVALID && ~write_busy)
                         read_state_next = r_s_issue_read;
                 end
 
@@ -226,7 +226,7 @@ module encoder_axi(
                 end
 
                 r_s_resp: begin
-                    if (r_ready)  // Master accepted read data
+                    if (S_AXI_RREADY)  // Master accepted read data
                         read_state_next = r_s_idle;
                 end
 
@@ -236,12 +236,12 @@ module encoder_axi(
     end
 
     // Output logic
-    always @(posedge aclk) begin
-        if (~aresetn) begin
-            AR_READY <= 1'b0;
-            R_VALID <= 1'b0;
-            R_DATA <= 32'h0;
-            R_RESP <= RESP_OKAY;
+    always @(posedge S_AXI_ACLK) begin
+        if (~S_AXI_ARESETN) begin
+            S_AXI_ARREADY <= 1'b0;
+            S_AXI_RVALID <= 1'b0;
+            S_AXI_RDATA <= 32'h0;
+            S_AXI_RRESP <= RESP_OKAY;
             bus_re <= 1'b0;
             r_addr_latched <= 32'h0;
             r_data_latched <= 32'h0;
@@ -249,15 +249,15 @@ module encoder_axi(
         end 
         else begin
             // Defaults
-            AR_READY <= 1'b0;
+            S_AXI_ARREADY <= 1'b0;
             bus_re <= 1'b0;
             case (read_state)
                 r_s_idle: begin
-                    if (ar_valid && ~write_busy) begin
-                        r_addr_latched <= ar_addr;
-                        AR_READY <= 1'b1;
+                    if (S_AXI_ARVALID && ~write_busy) begin
+                        r_addr_latched <= S_AXI_ARADDR;
+                        S_AXI_ARREADY <= 1'b1;
                     end
-                    R_VALID <= 1'b0;
+                    S_AXI_RVALID <= 1'b0;
                 end
 
                 r_s_issue_read: begin
@@ -269,9 +269,9 @@ module encoder_axi(
                          (r_addr_latched[7:0] == 8'h04) || 
                          (r_addr_latched[7:0] == 8'h08) || 
                          (r_addr_latched[7:0] == 8'h0C) )
-                        R_RESP <= RESP_OKAY;
+                        S_AXI_RRESP <= RESP_OKAY;
                     else
-                        R_RESP <= RESP_SLVERR;
+                        S_AXI_RRESP <= RESP_SLVERR;
                 end
 
                 r_s_wait_data: begin
@@ -280,8 +280,8 @@ module encoder_axi(
 
                 r_s_resp: begin
                     r_data_latched <= bus_rdata;
-                    R_DATA <= bus_rdata;
-                    R_VALID <= 1'b1;
+                    S_AXI_RDATA <= bus_rdata;
+                    S_AXI_RVALID <= 1'b1;
                 end
             endcase
         end
