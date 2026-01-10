@@ -1,1 +1,44 @@
+# Vivado generated files
+*.jou
+*.log
+*.pb
+*.wdb
+*.xpr
+*.bit
+*.ltx
+*.rpt
+*.dcp
+*.vdi
+
+vivado/**/.Xil/
+vivado/**/xsim.dir/
+vivado/**/.cache/
+vivado/**/webtalk*
+vivado/**/*.runs/
+vivado/**/*.cache/
+vivado/**/*.hw/
+vivado/**/*.ip_user_files/
+vivado/**/*.sim/
+vivado/**/*.tmp/
+
+# Ignore Vivado-generated block design files (keep only source .bd)
+vivado/**/hdl/
+vivado/**/sim/
+vivado/**/synth/
+vivado/**/ip/
+vivado/**/ipshared/
+vivado/**/hw_handoff/
+vivado/**/*.xsa
+vivado/**/*.bxml
+vivado/**/*.bda
+vivado/**/*.veo
+vivado/**/*.vho
+
+# Simulation files
+*.out
 *.vcd
+*.wdb
+
+# OS files
+.DS_Store
+*~

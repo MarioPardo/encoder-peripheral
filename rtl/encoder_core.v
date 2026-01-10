@@ -51,55 +51,47 @@ always @(posedge clk) begin
         ab_sync2 <= 2'b00;
         ab_prev <= 2'b00;
         ab_curr <= 2'b00;
-
-        window_ctr           <= 0;
+        window_ctr <= 0;
         position_prev_window <= 0;
-        velocity             <= 0;
+        velocity <= 0;
+        position <= 0;
+        direction <= 0;
     end 
-    
+    else if (clr_pos) begin
+        position <= 0;
+        direction <= 0;
+        velocity <= 0;
+        window_ctr <= 0;
+    end
     else begin   
-        // sample encoder inputs (2-flipflop synchronizer)
         ab_sync1 <= {enc_a, enc_b};
         ab_sync2 <= ab_sync1;
-
         ab_prev <= ab_curr;
         ab_curr <= ab_sync2;
 
-        // velocity
         if (enable) begin
+            position <= position + step;
+            if (step == 1)
+                direction <= 1'b1;
+            else if (step == -1)
+                direction <= 1'b0;
+
             if (window_ctr == WINDOW_CYCLES-1) begin
                 velocity <= position - position_prev_window;
                 position_prev_window <= position;
                 window_ctr <= 0;
             end 
             else begin
+                velocity <= velocity;
+                position_prev_window <= position_prev_window;
                 window_ctr <= window_ctr + 1;
             end
         end
-        // do not update velocity if not enabled
-    end
-end
-
-
-// Clocked logic to update registers
-always @(posedge clk) begin
-    if (reset) begin
-        position  <= 0;
-        direction <= 0;
-    end 
-    else if (clr_pos) begin
-        position  <= 0;
-        direction <= 0;
-        velocity  <= 0;
-        window_ctr <=0;
-    end
-    else if (enable) begin
-        position  <= position + step;
-        if (step == 1)
-            direction <= 1'b1;
-        else if (step == -1)
-            direction <= 1'b0;
-
+        else begin
+            velocity <= velocity;
+            window_ctr <= window_ctr;
+            position_prev_window <= position_prev_window;
+        end
     end
 end
 
