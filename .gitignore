@@ -1,44 +1,60 @@
-# Vivado generated files
+# ============================================================
+# Vivado - ignore generated/cache, keep project + sources
+# ============================================================
+vivado/*.cache/
+vivado/*.gen/
+vivado/*.hw/
+vivado/*.ip_user_files/
+vivado/*.runs/
+vivado/*.sim/
+vivado/*.tmp/
+vivado/impl_1/
+vivado/synth_1/
+vivado/ip_repocd/
+vivado/**/.Xil/
+vivado/**/xsim.dir/
+vivado/**/webtalk*
+
+# Keep: project file, hardware export, and block design sources
+!vivado/*.xpr
+!vivado/*.xsa
+!vivado/encoder_peripheral.srcs/
+
+# Ignore generated/binary artifacts inside srcs
+vivado/**/*.bda
+vivado/**/bd/*/ui/
+vivado/**/utils_1/
+
+# ============================================================
+# Vitis - ignore generated platform/BSP, keep hand-written src
+# ============================================================
+vitis_workspace/cora_platform/
+vitis_workspace/_ide/
+vitis_workspace/**/Debug/
+vitis_workspace/**/Release/
+vitis_workspace/**/*.elf
+vitis_workspace/**/*.o
+vitis_workspace/**/*.a
+vitis_workspace/**/compile_commands.json
+vitis_workspace/**/Empty_applicationExample.cmake
+vitis_workspace/**/README.txt
+vitis_workspace/**/.cache/
+vitis_workspace/**/.clangd
+vitis_workspace/**/.gitignore
+vitis_workspace/**/.rigel_lopper/
+vitis_workspace/**/_ide/
+vitis_workspace/**/vitis-comp.json
+vivado/.jobs/
+
+# ============================================================
+# Misc
+# ============================================================
 *.jou
 *.log
 *.pb
 *.wdb
-*.xpr
-*.bit
-*.ltx
-*.rpt
-*.dcp
-*.vdi
-
-vivado/**/.Xil/
-vivado/**/xsim.dir/
-vivado/**/.cache/
-vivado/**/webtalk*
-vivado/**/*.runs/
-vivado/**/*.cache/
-vivado/**/*.hw/
-vivado/**/*.ip_user_files/
-vivado/**/*.sim/
-vivado/**/*.tmp/
-
-# Ignore Vivado-generated block design files (keep only source .bd)
-vivado/**/hdl/
-vivado/**/sim/
-vivado/**/synth/
-vivado/**/ip/
-vivado/**/ipshared/
-vivado/**/hw_handoff/
-vivado/**/*.xsa
-vivado/**/*.bxml
-vivado/**/*.bda
-vivado/**/*.veo
-vivado/**/*.vho
-
-# Simulation files
+*.str
 *.out
 *.vcd
-*.wdb
-
-# OS files
 .DS_Store
 *~
