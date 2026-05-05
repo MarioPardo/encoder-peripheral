@@ -1,33 +1,52 @@
-// SSD1306 128x64 OLED I2C test using U8g2
+// SSD1306 128x64 OLED I2C test — Adafruit library
 // Rename to .ino for Arduino IDE
-// Library: U8g2 by olikraus (install via Library Manager)
-// HW_I2C does NOT work with this display — must use SW_I2C
+// Libraries needed: Adafruit SSD1306, Adafruit GFX (install via Library Manager)
+// Address: 0x3C, clock: 10000 Hz (display requires reduced speed)
 
 #include <Arduino.h>
-#include <U8g2lib.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
-// SCL = A5, SDA = A4 on Uno/Nano — adjust if using a different board
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ SCL, /* data=*/ SDA, /* reset=*/ U8X8_PIN_NONE);
+#define I2C_CLOCK   10000
+#define SCREEN_W    128
+#define SCREEN_H    64
+#define OLED_ADDR   0x3C
+#define OLED_RESET  -1
+
+Adafruit_SSD1306 display(SCREEN_W, SCREEN_H, &Wire, OLED_RESET);
 
 void setup() {
     Serial.begin(115200);
-    if (!u8g2.begin()) {
-        Serial.println("Display init FAILED — check wiring and I2C address");
+    Wire.begin();
+    Wire.setClock(I2C_CLOCK);
+
+    if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDR)) {
+        Serial.println("Display init FAILED");
         while (1);
     }
     Serial.println("Display init OK");
+
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0, 0);
+    display.println("Adafruit Test OK");
+    display.display();
 }
 
 void loop() {
     char buf[24];
     snprintf(buf, sizeof(buf), "t = %lu ms", millis());
 
-    u8g2.clearBuffer();
-    u8g2.setFont(u8g2_font_ncenB08_tr);
-    u8g2.drawStr(0, 12, "I2C Test OK");
-    u8g2.drawStr(0, 28, "SSD1306 + U8g2");
-    u8g2.drawStr(0, 44, buf);
-    u8g2.sendBuffer();
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.println("Adafruit Test OK");
+    display.setCursor(0, 16);
+    display.println("SSD1306 + HW I2C");
+    display.setCursor(0, 32);
+    display.println(buf);
+    display.display();
 
     delay(500);
 }
