@@ -1,0 +1,14 @@
+/include/ "system-conf.dtsi"
+/ {
+};
+
+&i2c0 {
+    clock-frequency = <50000>;
+};
+
+&amba {
+    encoder_axi@40000000 {
+        compatible = "mario,encoder-axi";
+        reg = <0x40000000 0x10>;
+    };
+};
