@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include "xil_printf.h"
 #include "xparameters.h"
+#include "xiicps.h"
+#include "ssd1306.h"
 
 #define ENC_BASE     XPAR_ENCODER_AXI_0_BASEADDR
 
@@ -15,26 +17,59 @@
 
 int main(void)
 {
-    xil_printf("\r\n=== Phase 2: Encoder Test ===\r\n");
+    /* Startup delay — open serial monitor now, output follows in ~3s */
+    for (volatile int d = 0; d < 100000000; d++);
 
-    REG_CTRL = CTRL_CLR_POS;
-    REG_CTRL = CTRL_ENABLE;
+    xil_printf("\r\n=== Step 2: Encoder + Display ===\r\n");
 
-    xil_printf("Encoder enabled. Tap BTN0/BTN1 to simulate quadrature pulses.\r\n");
-    xil_printf("Polling for 30 seconds...\r\n\r\n");
+    XIicPs iic;
+    XIicPs_Config *cfg = XIicPs_LookupConfig(XPAR_XIICPS_0_BASEADDR);
+    XIicPs_CfgInitialize(&iic, cfg, cfg->BaseAddress);
+    XIicPs_SetSClk(&iic, SSD1306_I2C_HZ);
 
-    for (int i = 0; i < 150; i++) {
-        int32_t pos = REG_POSITION;
-        int32_t vel = REG_VELOCITY;
-        uint32_t dir = REG_STATUS & 0x1;
+    uint8_t test_buf[2] = {0x00, 0xAE};
+    int rc = XIicPs_MasterSendPolled(&iic, test_buf, 2, SSD1306_ADDR);
+    for (volatile int t = 0; t < 1000000 && XIicPs_BusIsBusy(&iic); t++);
 
-        xil_printf("pos=%6d  vel=%6d  dir=%s\r\n",
-                   pos, vel, dir ? "FWD" : "REV");
-
-        for (volatile int d = 0; d < 2000000; d++);
+    if (rc != XST_SUCCESS) {
+        xil_printf("ERROR: No ACK from display. Check wiring Arduino SCL(P16) SDA(P15).\r\n");
+        while (1);
     }
 
-    REG_CTRL = 0;
-    xil_printf("Done.\r\n");
+    ssd1306_init(&iic);
+    ssd1306_clear(&iic);
+    xil_printf("Display ready.\r\n");
+
+    REG_CTRL = CTRL_ENABLE;
+    xil_printf("Encoder enabled. Turn the knob.\r\n");
+
+    char buf[32];
+    int32_t last_pos = 0x7FFFFFFF;
+    int32_t last_vel = 0x7FFFFFFF;
+
+    while (1) {
+        int32_t pos = REG_POSITION;
+        int32_t vel = REG_VELOCITY;
+        const char *dir = (vel > 0) ? "CW " : (vel < 0) ? "CCW" : "---";
+
+        if (pos != last_pos) {
+            snprintf(buf, sizeof(buf), "POS: %-8d", (int)pos);
+            ssd1306_draw_string(&iic, 0, 0, buf);
+            xil_printf("POS: %d\r\n", (int)pos);
+            last_pos = pos;
+        }
+
+        if (vel != last_vel) {
+            snprintf(buf, sizeof(buf), "VEL: %-8d", (int)vel);
+            ssd1306_draw_string(&iic, 0, 2, buf);
+            snprintf(buf, sizeof(buf), "DIR: %s", dir);
+            ssd1306_draw_string(&iic, 0, 4, buf);
+            xil_printf("VEL: %d  DIR: %s\r\n", (int)vel, dir);
+            last_vel = vel;
+        }
+
+        for (volatile int d = 0; d < 5000000; d++); /* ~50ms poll interval */
+    }
+
     return 0;
 }

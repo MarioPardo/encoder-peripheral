@@ -20,18 +20,29 @@
 ---
 
 ## Pin Assignment
-Use the Zynq PS I2C controller (MIO pins) — no PL GPIO or AXI GPIO needed.
 
-Cora Z7 PS I2C pins (MIO, exposed on Arduino header):
-| Signal | Arduino Header Pin |
-|--------|--------------------|
-| SCL    | A5 (SCL)           |
-| SDA    | A4 (SDA)           |
+**PS MIO I2C is NOT used.** MIO bank 1 (MIO 16/17) is 1.8V — too low for the 3.3V SSD1306 module.
 
-Wire the display: SCL→A5, SDA→A4, VCC→3.3V, GND→GND.
+Instead: PS I2C0 is routed via **EMIO** through the PL to the 3.3V Arduino/ChipKit I2C header.
 
-> No Vivado changes needed — PS I2C is part of the PS and always available.
-> No new bitstream required for Step 1.
+| Signal | Package Pin | Arduino Header Label |
+|--------|-------------|----------------------|
+| SCL    | P16         | SCL (dedicated)      |
+| SDA    | P15         | SDA (dedicated)      |
+
+Wire the display: **SCL→Arduino SCL pin, SDA→Arduino SDA pin**, VCC→3.3V, GND→GND.
+
+> **Vivado changes required:**
+> - PS7 block: I2C0 enabled on EMIO (not MIO)
+> - IIC_0 port made external in block design
+> - XDC: P16=SCL, P15=SDA, LVCMOS33
+> - New bitstream required (already generated as of 2026-05-05)
+
+## XDC Constraints (already in cora_z7.xdc)
+```
+set_property -dict {PACKAGE_PIN P16 IOSTANDARD LVCMOS33} [get_ports IIC_0_0_scl_io]
+set_property -dict {PACKAGE_PIN P15 IOSTANDARD LVCMOS33} [get_ports IIC_0_0_sda_io]
+```
 
 ---
 
@@ -72,10 +83,19 @@ Key steps:
 
 **Test goal:** display shows "HELLO ZYNQ".
 
+## Lessons Learned So Far (2026-05-05)
+
+- **EMIO required** — PS MIO I2C bank is 1.8V, unusable with 3.3V display
+- **Port naming** — Vivado generates `IIC_0_0_scl_io` / `IIC_0_0_sda_io` (double `_0`) when making external; XDC must match exactly
+- **SDT BSP** — Vitis 2025.2 uses System Device Tree; `XIicPs_LookupConfig` takes `XPAR_XIICPS_0_BASEADDR` not `DEVICE_ID`
+- **No bus-busy waits** — `while(XIicPs_BusIsBusy())` hangs indefinitely on NACK; reference implementation (u8x8_cora_z7/) uses none
+- **Serial monitor** — Vitis debugger holds the UART port; close/terminate debug session before opening picocom, or use Vitis built-in terminal
+- **Reference implementation** — working bare-metal XIicPs + u8g2 code in `u8x8_cora_z7/`
+
 ### Lessons to Record After Step 1
-- Exact `XIicPs_SetSClk()` value that worked
+- Exact `XIicPs_SetSClk()` value that worked (10kHz confirmed on Arduino; 100kHz used in reference — TBD on Zynq)
 - Whether polled mode was sufficient or interrupt mode was needed
-- Any BSP config needed to enable IIC in the platform
+- Any remaining BSP config needed
 
 ---
 
