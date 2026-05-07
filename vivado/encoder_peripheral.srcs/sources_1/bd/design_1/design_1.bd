@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0xA3F0E9595F2896DD",
+      "boundary_crc": "0xCF673C7FD172F9E9",
       "device": "xc7z010clg400-1",
       "gen_directory": "../../../../encoder_peripheral.gen/sources_1/bd/design_1",
       "name": "design_1",
@@ -197,18 +197,7 @@
           }
         }
       },
-      "buttons": {
-        "mode": "Master",
-        "vlnv_bus_definition": "xilinx.com:interface:gpio:1.0",
-        "vlnv": "xilinx.com:interface:gpio_rtl:1.0",
-        "hdl_attributes": {
-          "LOCKED": {
-            "value": "FALSE",
-            "value_src": "default"
-          }
-        }
-      },
-      "IIC_0_0": {
+      "IIC_1_0": {
         "mode": "Master",
         "vlnv_bus_definition": "xilinx.com:interface:iic:1.0",
         "vlnv": "xilinx.com:interface:iic_rtl:1.0",
@@ -216,32 +205,6 @@
           "LOCKED": {
             "value": "FALSE",
             "value_src": "default"
-          }
-        },
-        "port_maps": {
-          "SDA_I": {
-            "physical_name": "IIC_0_0_sda_i",
-            "direction": "I"
-          },
-          "SDA_O": {
-            "physical_name": "IIC_0_0_sda_o",
-            "direction": "O"
-          },
-          "SDA_T": {
-            "physical_name": "IIC_0_0_sda_t",
-            "direction": "O"
-          },
-          "SCL_I": {
-            "physical_name": "IIC_0_0_scl_i",
-            "direction": "I"
-          },
-          "SCL_O": {
-            "physical_name": "IIC_0_0_scl_o",
-            "direction": "O"
-          },
-          "SCL_T": {
-            "physical_name": "IIC_0_0_scl_t",
-            "direction": "O"
           }
         }
       }
@@ -949,12 +912,12 @@
           },
           "PCW_MIO_TREE_PERIPHERALS": {
             "value": [
-              "GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#ENET Reset#GPIO#GPIO#GPIO#GPIO#UART 0#UART 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#USB 0#USB 0#USB 0#USB",
-              "0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#SD 0#SD 0#SD 0#SD 0#SD 0#SD 0#USB Reset#SD 0#GPIO#GPIO#GPIO#GPIO#Enet 0#Enet 0"
+              "GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#ENET Reset#GPIO#GPIO#GPIO#GPIO#UART 0#UART 0#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB",
+              "0#USB 0#USB 0#USB 0#USB 0#SD 0#SD 0#SD 0#SD 0#SD 0#SD 0#USB Reset#SD 0#GPIO#GPIO#GPIO#GPIO#Enet 0#Enet 0"
             ]
           },
           "PCW_MIO_TREE_SIGNALS": {
-            "value": "gpio[0]#gpio[1]#gpio[2]#gpio[3]#gpio[4]#gpio[5]#gpio[6]#gpio[7]#gpio[8]#reset#gpio[10]#gpio[11]#gpio[12]#gpio[13]#rx#tx#tx_clk#txd[0]#txd[1]#txd[2]#txd[3]#tx_ctl#rx_clk#rxd[0]#rxd[1]#rxd[2]#rxd[3]#rx_ctl#data[4]#dir#stp#nxt#data[0]#data[1]#data[2]#data[3]#clk#data[5]#data[6]#data[7]#clk#cmd#data[0]#data[1]#data[2]#data[3]#reset#cd#gpio[48]#gpio[49]#gpio[50]#gpio[51]#mdc#mdio"
+            "value": "gpio[0]#gpio[1]#gpio[2]#gpio[3]#gpio[4]#gpio[5]#gpio[6]#gpio[7]#gpio[8]#reset#gpio[10]#gpio[11]#gpio[12]#gpio[13]#rx#tx#gpio[16]#gpio[17]#gpio[18]#gpio[19]#gpio[20]#gpio[21]#gpio[22]#gpio[23]#gpio[24]#gpio[25]#gpio[26]#gpio[27]#data[4]#dir#stp#nxt#data[0]#data[1]#data[2]#data[3]#clk#data[5]#data[6]#data[7]#clk#cmd#data[0]#data[1]#data[2]#data[3]#reset#cd#gpio[48]#gpio[49]#gpio[50]#gpio[51]#mdc#mdio"
           },
           "PCW_OVERRIDE_BASIC_CLOCK": {
             "value": "0"
@@ -1775,12 +1738,6 @@
           "processing_system7_0/FIXED_IO"
         ]
       },
-      "processing_system7_0_IIC_0": {
-        "interface_ports": [
-          "IIC_0_0",
-          "processing_system7_0/IIC_0"
-        ]
-      },
       "processing_system7_0_M_AXI_GP0": {
         "interface_ports": [
           "processing_system7_0/M_AXI_GP0",
@@ -1804,10 +1761,10 @@
       "processing_system7_0_FCLK_CLK0": {
         "ports": [
           "processing_system7_0/FCLK_CLK0",
-          "processing_system7_0/M_AXI_GP0_ACLK",
           "axi_smc/aclk",
           "rst_ps7_0_50M/slowest_sync_clk",
-          "encoder_axi_0/S_AXI_ACLK"
+          "encoder_axi_0/S_AXI_ACLK",
+          "processing_system7_0/M_AXI_GP0_ACLK"
         ]
       },
       "processing_system7_0_FCLK_RESET0_N": {

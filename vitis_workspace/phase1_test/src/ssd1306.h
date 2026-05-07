@@ -6,7 +6,7 @@
 #include "ssd1306_font.h"
 
 #define SSD1306_ADDR   0x3C
-#define SSD1306_I2C_HZ 50000
+#define SSD1306_I2C_HZ 10000
 
 /* Send a single command byte */
 static inline int ssd1306_cmd(XIicPs *iic, uint8_t cmd)

@@ -8,5 +8,5 @@ set_property -dict { PACKAGE_PIN Y18 IOSTANDARD LVCMOS33 } [get_ports { enc_a_0 
 set_property -dict { PACKAGE_PIN Y19 IOSTANDARD LVCMOS33 } [get_ports { enc_b_0 }];
 
 #i2c display
-set_property -dict {PACKAGE_PIN P16 IOSTANDARD LVCMOS33} [get_ports IIC_0_0_scl_io]
-set_property -dict {PACKAGE_PIN P15 IOSTANDARD LVCMOS33} [get_ports IIC_0_0_sda_io]
+set_property -dict {PACKAGE_PIN P16 IOSTANDARD LVCMOS33} [get_ports {IIC_0_0_scl_io}];
+set_property -dict {PACKAGE_PIN P15 IOSTANDARD LVCMOS33} [get_ports {IIC_0_0_sda_io}];

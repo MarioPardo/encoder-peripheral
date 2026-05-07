@@ -27,18 +27,19 @@ int main(void)
     XIicPs_CfgInitialize(&iic, cfg, cfg->BaseAddress);
     XIicPs_SetSClk(&iic, SSD1306_I2C_HZ);
 
+    int display_ok = 0;
     uint8_t test_buf[2] = {0x00, 0xAE};
     int rc = XIicPs_MasterSendPolled(&iic, test_buf, 2, SSD1306_ADDR);
-    for (volatile int t = 0; t < 1000000 && XIicPs_BusIsBusy(&iic); t++);
+    for (volatile int d = 0; d < 1000000; d++);
 
     if (rc != XST_SUCCESS) {
-        xil_printf("ERROR: No ACK from display. Check wiring Arduino SCL(P16) SDA(P15).\r\n");
-        while (1);
+        xil_printf("WARNING: No ACK from display at 0x%02X. Running terminal-only.\r\n", SSD1306_ADDR);
+    } else {
+        ssd1306_init(&iic);
+        ssd1306_clear(&iic);
+        xil_printf("Display ready.\r\n");
+        display_ok = 1;
     }
-
-    ssd1306_init(&iic);
-    ssd1306_clear(&iic);
-    xil_printf("Display ready.\r\n");
 
     REG_CTRL = CTRL_ENABLE;
     xil_printf("Encoder enabled. Turn the knob.\r\n");
@@ -53,22 +54,26 @@ int main(void)
         const char *dir = (vel > 0) ? "CW " : (vel < 0) ? "CCW" : "---";
 
         if (pos != last_pos) {
-            snprintf(buf, sizeof(buf), "POS: %-8d", (int)pos);
-            ssd1306_draw_string(&iic, 0, 0, buf);
             xil_printf("POS: %d\r\n", (int)pos);
+            if (display_ok) {
+                snprintf(buf, sizeof(buf), "POS: %-8d", (int)pos);
+                ssd1306_draw_string(&iic, 0, 0, buf);
+            }
             last_pos = pos;
         }
 
         if (vel != last_vel) {
-            snprintf(buf, sizeof(buf), "VEL: %-8d", (int)vel);
-            ssd1306_draw_string(&iic, 0, 2, buf);
-            snprintf(buf, sizeof(buf), "DIR: %s", dir);
-            ssd1306_draw_string(&iic, 0, 4, buf);
             xil_printf("VEL: %d  DIR: %s\r\n", (int)vel, dir);
+            if (display_ok) {
+                snprintf(buf, sizeof(buf), "VEL: %-8d", (int)vel);
+                ssd1306_draw_string(&iic, 0, 2, buf);
+                snprintf(buf, sizeof(buf), "DIR: %s", dir);
+                ssd1306_draw_string(&iic, 0, 4, buf);
+            }
             last_vel = vel;
         }
 
-        for (volatile int d = 0; d < 5000000; d++); /* ~50ms poll interval */
+        for (volatile int d = 0; d < 5000000; d++);
     }
 
     return 0;
