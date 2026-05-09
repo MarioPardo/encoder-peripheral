@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0xCF673C7FD172F9E9",
+      "boundary_crc": "0xA3F0E95974B26ABF",
       "device": "xc7z010clg400-1",
       "gen_directory": "../../../../encoder_peripheral.gen/sources_1/bd/design_1",
       "name": "design_1",
@@ -197,7 +197,7 @@
           }
         }
       },
-      "IIC_1_0": {
+      "IIC_0_0": {
         "mode": "Master",
         "vlnv_bus_definition": "xilinx.com:interface:iic:1.0",
         "vlnv": "xilinx.com:interface:iic_rtl:1.0",
@@ -205,6 +205,32 @@
           "LOCKED": {
             "value": "FALSE",
             "value_src": "default"
+          }
+        },
+        "port_maps": {
+          "SDA_I": {
+            "physical_name": "IIC_0_0_sda_i",
+            "direction": "I"
+          },
+          "SDA_O": {
+            "physical_name": "IIC_0_0_sda_o",
+            "direction": "O"
+          },
+          "SDA_T": {
+            "physical_name": "IIC_0_0_sda_t",
+            "direction": "O"
+          },
+          "SCL_I": {
+            "physical_name": "IIC_0_0_scl_i",
+            "direction": "I"
+          },
+          "SCL_O": {
+            "physical_name": "IIC_0_0_scl_o",
+            "direction": "O"
+          },
+          "SCL_T": {
+            "physical_name": "IIC_0_0_scl_t",
+            "direction": "O"
           }
         }
       }
@@ -1736,6 +1762,12 @@
         "interface_ports": [
           "FIXED_IO",
           "processing_system7_0/FIXED_IO"
+        ]
+      },
+      "processing_system7_0_IIC_0": {
+        "interface_ports": [
+          "IIC_0_0",
+          "processing_system7_0/IIC_0"
         ]
       },
       "processing_system7_0_M_AXI_GP0": {
